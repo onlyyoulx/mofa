@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE struts PUBLIC
+    "-//Apache Software Foundation//DTD Struts Configuration 2.1.7//EN"
+    "http://struts.apache.org/dtds/struts-2.1.7.dtd">
+
+<struts>
+
+   <!-- 登录注册功能 -->
+   <package name="login" extends="json-default">
+     <action name="toLogin" class="com.mofa.action.LoginServiceAction">
+      <result name="success" type="json">
+       <param name="root">map</param>
+    
+       </result>
+       <result name="error" type="json">
+        <param name="root">map</param>
+       </result>
+     </action>
+     <action name="regist" class="com.mofa.action.RegistServiceAction">
+      <result name="success" type="json">
+       <param name="root">map</param>
+      </result>
+      <result name="error" type="json">
+       <param name="root">map</param>
+      </result>
+     </action>
+     <!-- 获取短信并写入数据库 -->
+     <action name="getCode" class="com.mofa.action.GetCodeServiceAction">
+      <result name="success" type="json">
+       <param name="root">map</param>
+      </result>
+      <result name="error" type="json">
+       <param name="root">map</param>
+      </result>
+     
+     </action>
+   
+   </package>
+   
+   <!-- 文件的上传 -->
+   
+   <constant name="struts.custom.i18n.resources" value="message"/>
+   <constant name="struts.i18n.encoding" value="utf-8"/>
+   
+   <!-- 上传过程中临时文件存放目录
+   <constant name="struts.multipart.saveDir" value="c:\"></constant>
+    -->
+   
+   <package name="upload" extends="json-default">
+   <!-- 多张图片上传及附带说说 -->
+    <action name="toUpload" class="com.mofa.action.UploadAction">
+      
+      <result name="input">/error.jsp</result>
+       <result name="success" type="json">
+       <param name="root">map</param>
+      </result>
+       <result name="error" type="json">
+       <param name="root">map</param>
+      </result>
+       
+    <!-- 拦截器配置 -->
+      <interceptor-ref name="fileUpload">
+       <!-- 设置文件上传最大字节数10M -->
+       <param name="maximumSize">1024*1024*10</param>
+       <!-- 设置文件上传类型 -->
+       <param name="allowedTypes">
+       image/gif,image/png,image/jpeg,image/jpg,image/pjpeg
+       </param>
+      </interceptor-ref>
+      <!-- 自定义了拦截器后必手动定义默认的拦截器，否则默认的拦截器不会被执行 -->
+      <interceptor-ref name="defaultStack"></interceptor-ref>
+
+    </action>
+    <!-- 单张图片上传，仅仅上传图片 -->
+     <action name="singleLoad" class="com.mofa.action.UploadAction2">
+      <result name="success" type="json">
+       <param name="root">map</param>
+      </result>
+       <result name="error" type="json">
+       <param name="root">map</param>
+      </result>
+        
+    <!-- 拦截器配置 -->
+      <interceptor-ref name="fileUpload">
+       <!-- 设置文件上传最大字节数2M -->
+       <param name="maximumSize">1024*1024*10</param>
+       <!-- 设置文件上传类型 -->
+       <param name="allowedTypes">
+       image/gif,image/png,image/jpeg,image/jpg,image/pjpeg
+       </param>
+      </interceptor-ref>
+      <!-- 自定义了拦截器后必手动定义默认的拦截器，否则默认的拦截器不会被执行 -->
+      <interceptor-ref name="defaultStack"></interceptor-ref>
+
+    </action>
+   </package>
+   
+   <!-- 分页查询 -->
+   <package name="paging" extends="json-default">
+    <action name="paging" class="com.mofa.action.PageAction">
+      <result name="success" type="json">
+       <param name="root">map</param>
+      </result>
+       <result name="error" type="json">
+       <param name="root">map</param>
+      </result>
+    
+    </action>
+   </package>
+
+</struts>

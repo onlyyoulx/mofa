@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:context="http://www.springframework.org/schema/context" 
+	xmlns:jdbc="http://www.springframework.org/schema/jdbc"  
+	xmlns:jee="http://www.springframework.org/schema/jee" 
+	xmlns:tx="http://www.springframework.org/schema/tx"
+	xmlns:aop="http://www.springframework.org/schema/aop" 
+	xmlns:mvc="http://www.springframework.org/schema/mvc"
+	xmlns:util="http://www.springframework.org/schema/util"
+	xmlns:jpa="http://www.springframework.org/schema/data/jpa"
+	xsi:schemaLocation="
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.2.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.2.xsd
+		http://www.springframework.org/schema/jdbc http://www.springframework.org/schema/jdbc/spring-jdbc-3.2.xsd
+		http://www.springframework.org/schema/jee http://www.springframework.org/schema/jee/spring-jee-3.2.xsd
+		http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-3.2.xsd
+		http://www.springframework.org/schema/data/jpa http://www.springframework.org/schema/data/jpa/spring-jpa-1.3.xsd
+		http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-3.2.xsd
+		http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc-3.2.xsd
+		http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-3.2.xsd">
+	
+	
+<!-- 配置数据源  -->
+	<bean id="ds" class="com.mchange.v2.c3p0.ComboPooledDataSource" destroy-method="close">
+	<!-- 配置连接参数 -->
+	<property name="jdbcUrl" value="jdbc:mysql://localhost:3306/mofa"/>
+	<property name="driverClass" value="com.mysql.jdbc.Driver"/>
+	<property name="user" value="root"/>
+	<property name="password" value="wosai0769"/>	
+	<!-- 配置连接池 -->
+	<property name="initialPoolSize" value="3"></property>
+	<property name="maxPoolSize" value="10"></property>
+	<property name="minPoolSize" value="1"></property>
+	<property name="acquireIncrement" value="3"></property>
+	<property name="maxIdleTime" value="60"></property>
+	
+	</bean>
+<!-- 配置SessionFactory -->
+	<bean id="sessionFactory" class="org.springframework.orm.hibernate3.LocalSessionFactoryBean">
+	<!-- 依赖数据源 -->
+	<property name="dataSource" ref="ds"></property>
+	<!-- bibernate框架相关配置 -->
+	<property name="hibernateProperties">
+	  <props>
+	    <!-- 这里设置hibernate采用何种方言即数据库
+	    MySQL:org.hibernate.dialect.MySQLDialect
+	    Oracle:org.Hibernate.dialect.OracleDialect
+	     -->
+	    <prop key="hibernate.dialect">
+	      org.hibernate.dialect.MySQLDialect
+	    </prop>
+	    <prop key="hibernate.show_sql">true</prop>
+	    <prop key="hibernate.formate_sql">true</prop>
+	  
+	  </props>
+    </property>
+    <property name="mappingResources">
+      <list>
+        <value>com/mofa/entity/User.hbm.xml</value>
+        <value>com/mofa/entity/Voices.hbm.xml</value>
+        <value>com/mofa/entity/Code.hbm.xml</value>
+      </list>
+    
+    </property>
+    
+    
+	</bean>
+	
+	<!-- HibernateTemplate类是简化Hibernate数据访问代码的辅助类可以获取一个session对象 -->
+	<bean id="hibernateTemplate" class="org.springframework.orm.hibernate3.HibernateTemplate">
+	  <property name="sessionFactory">
+	    <ref bean="sessionFactory"/>
+	  </property>
+	  <property name="allowCreate">
+	    <value>true</value>
+	  </property>
+	</bean>
+	
+	<!-- 依赖注入 -->
+	<bean id="userDao" class="com.mofa.dao.UserDaoReal">
+	 <!-- 注入持久化操作所需要的SessionFactory -->
+	 <property name="sessionFactory">
+	  <ref bean="sessionFactory"/> 
+	 </property>
+	</bean>
+	
+	<bean id="codeDao" class="com.mofa.dao.CodeDaoReal">
+	   <property name="sessionFactory">
+	    <ref bean="sessionFactory"/>
+	   </property>
+    </bean>
+	
+	<bean id="voiceDao" class="com.mofa.dao.VoiceDaoReal">
+	   <property name="sessionFactory">
+	   <ref bean="sessionFactory" />
+	   </property>
+	</bean>
+	
+	
+<!-- 开启注解扫描 -->	
+	<context:component-scan base-package="com.mofa"></context:component-scan>
+
+
+<!-- 申明事务管理，采用AOP形式切入 -->
+     <bean id="txManager" class="org.springframework.orm.hibernate3.HibernateTransactionManager">
+       <property name="sessionFactory" ref="sessionFactory"></property>
+     </bean>
+     <!-- 配置事务通知属性 -->
+     <tx:advice id="txAdvice" transaction-manager="txManager">
+     <!-- 定义事务传播属性 -->
+       <tx:attributes>
+         <tx:method name="update*" propagation="REQUIRED"></tx:method>
+         <tx:method name="delete*" propagation="REQUIRED"></tx:method>
+         <tx:method name="add*" propagation="REQUIRED"></tx:method>
+         <tx:method name="load*" read-only="true"></tx:method>
+         <tx:method name="execute" propagation="REQUIRED"></tx:method>
+       </tx:attributes>
+     
+     </tx:advice>
+     <!-- 配置事务切面 -->
+     <aop:config proxy-target-class="true">
+       <aop:advisor advice-ref="txAdvice"
+            pointcut="within(com.mofa.action.*)"
+       />
+        
+     </aop:config>
+
+</beans>
+
+
+
+
+
